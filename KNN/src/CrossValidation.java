@@ -1,12 +1,35 @@
 import java.util.ArrayList;
 import java.util.Random;
+
+import weka.classifiers.trees.J48;
+import weka.core.Instance;
 import weka.core.Instances;
+import weka.core.converters.ConverterUtils.DataSource;
 
 public class CrossValidation {
 	private Instances dataSet; 
 	private int k;           //folds
 	private int sizeOfInput; //size of entire data size
 	private ArrayList<Instances> bigArrayList;
+	
+	public static void main(String[] args) {
+		DataSource source = null;
+		Instances data = null;
+		try {
+			source = new DataSource("whether.arff");
+			data = source.getDataSet();
+			if (data.classIndex() == -1)
+				data.setClassIndex(data.numAttributes() - 1);
+			J48 j48 = new J48();
+			j48.buildClassifier(data);
+			CrossValidation cv = new CrossValidation(data, 5);
+			cv.doCrossValidation(data, j48);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		
+	}
 	
 	public CrossValidation(Instances dataSet, int k){
 		this.dataSet = dataSet;
@@ -35,6 +58,7 @@ public class CrossValidation {
 	}
 	
 	public ArrayList<Instances> generateFolds(){
+		bigArrayList = new ArrayList<Instances>();
         int[] dataNum = new int[sizeOfInput];
         dataNum = performPermutation();
         int sizePerFold = sizeOfInput/k;
@@ -87,7 +111,7 @@ public class CrossValidation {
 					isTheSame++;
 				}
 			}
-			accuracyPerFold[i] = isTheSame/sizePerFold;
+			accuracyPerFold[i] = (double)isTheSame/(double)sizePerFold;
 		}
 		
 		for(int i=0; i<k; i++){
@@ -97,6 +121,37 @@ public class CrossValidation {
 		return accuracy;
 	}
 	
+	public double doCrossValidation(Instances dataSet, J48 knn) throws Exception{
+		double accuracy = 0.0;
+		double[] accuracyPerFold = new double[k];
+		int isTheSame = 0;
+		int sizePerFold = sizeOfInput/k;
+		
+		
+		
+		for(int i=0; i<k; i++){
+			Instances test = bigArrayList.get(i);
+			
+			//System.out.println(test);
+			
+			for (int j = 0; j < sizePerFold; j++) {
+				Instance in = test.get(j);
+//				System.out.println(knn);
+//				System.out.println(in);
+				if(knn.classifyInstance(in) == in.classValue()) {
+					isTheSame++;
+				}
+			}
+			
+			accuracyPerFold[i] = (double)isTheSame/(double)sizePerFold;
+		}
+		
+		for(int i=0; i<k; i++){
+			accuracy += accuracyPerFold[i];
+		}
+		accuracy = accuracy/k;
+		return accuracy;
+	}
 	
 	public class KNN {
 		public Instances classifyAttribute(Instances trainingData, Instances testData){
