@@ -136,31 +136,35 @@ public class CrossValidation {
 		double accuracy = 0.0;
 		double[] accuracyPerFold = new double[k];
 		int isTheSame = 0;
-		int sizePerFold = sizeOfInput/k;
-		
-		
+		int sizePerFold = sizeOfInput/k;		
 		
 		for(int i=0; i<k; i++){
+			knn.buildClassifier(this.getTrainingData(i));
 			Instances test = bigArrayList.get(i);
-			
+			isTheSame = 0;
 			
 			//System.out.println(test);
 			
 			for (int j = 0; j < sizePerFold; j++) {
 				Instance in = test.get(j);
-//				System.out.println(knn);
-//				System.out.println(in);
+
 				if(knn.classifyInstance(in) == in.classValue()) {
 					isTheSame++;
 				}
 			}
 			
+			//System.out.println(isTheSame);
+			//System.out.println(sizePerFold);
 			accuracyPerFold[i] = (double)isTheSame/(double)sizePerFold;
 		}
+		
+		System.out.println(Arrays.toString(accuracyPerFold));
 		
 		for(int i=0; i<k; i++){
 			accuracy += accuracyPerFold[i];
 		}
+		
+		System.out.println("Total accuracy: " + accuracy);
 		accuracy = accuracy/k;
 		return accuracy;
 	}
