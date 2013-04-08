@@ -8,7 +8,7 @@ import weka.core.Instances;
 import weka.core.converters.ConverterUtils.DataSource;
 
 public class knnAlgorithm {
-  private final int k = 90;
+	private final int k = 3;
 	private String[] attributes;
 	private double[] attributesMax;;
 	private double[] attributesMin;
@@ -104,16 +104,14 @@ public class knnAlgorithm {
 							attributesValues[k] = euclideanNorm(
 									testDataValues[i][k],
 									trainingDataValues[j][k]);
-							sum = sum + attributesValues[k];
 						} else {
-							//System.out.println(trainingSet.get(j).attribute(k) + "   " + testSet.get(j).attribute(k));
-							if(trainingSet.get(j).attribute(k).equals(testSet.get(i).attribute(k))) {
+							if(trainingSet.get(j).value(k) == testSet.get(i).value(k)) {
 								attributesValues[k] = 1;
 							} else {
 								attributesValues[k] = 0;
 							}
-							sum = sum + attributesValues[k];
 						}
+						sum = sum + attributesValues[k];
 					}
 					double distance = 1 / (Math.sqrt(sum));
 					map.put(distance, predictionValues[j]);
