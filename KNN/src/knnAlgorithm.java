@@ -8,7 +8,7 @@ import weka.core.Instances;
 import weka.core.converters.ConverterUtils.DataSource;
 
 public class knnAlgorithm {
-	private final int k = 3;
+	private final int k = 5;
 	private String[] attributes;
 	private double[] attributesMax;;
 	private double[] attributesMin;
@@ -36,7 +36,7 @@ public class knnAlgorithm {
 		}
 	}
 
-	public String storeData() {
+	public List<String> storeData() {
 		try {
 
 			// String[] nominalValues = new String[data.numAttributes()];
@@ -94,6 +94,7 @@ public class knnAlgorithm {
 
 			normalize(testDataValues, attributesMax, attributesMin);
 			StringBuilder sb = new StringBuilder();
+			List<String> result = new ArrayList<String>();
 			for (int i = 0; i < testDataValues.length; i++) {
 				Map<Double, String> map = new TreeMap<Double, String>();
 				for (int j = 0; j < trainingDataValues.length; j++) {
@@ -132,11 +133,9 @@ public class knnAlgorithm {
 					}
 
 				}
-				sb.append(tmp);
-				sb.append(",");
+				result.add(tmp);
 			}
-			sb.replace(sb.length() - 1, sb.length(), "");
-			return sb.toString();
+			return result;
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
