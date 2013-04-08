@@ -19,6 +19,8 @@ public class knnAlgorithm {
 	public knnAlgorithm(Instances trainingSet, Instances testSet) {
 		this.trainingSet = trainingSet;
 		this.testSet = testSet;
+		this.trainingSet.setClassIndex(trainingSet.numAttributes()-1);
+		this.testSet.setClassIndex(testSet.numAttributes()-1);
 		attributes = new String[trainingSet.numAttributes()];
 		attributesMax = new double[trainingSet.numAttributes()];
 		attributesMin = new double[trainingSet.numAttributes()];
@@ -36,7 +38,7 @@ public class knnAlgorithm {
 		}
 	}
 
-	public List<String> storeData() {
+	public List<Double> storeData() {
 		try {
 
 			// String[] nominalValues = new String[data.numAttributes()];
@@ -94,9 +96,9 @@ public class knnAlgorithm {
 
 			normalize(testDataValues, attributesMax, attributesMin);
 			StringBuilder sb = new StringBuilder();
-			List<String> result = new ArrayList<String>();
+			List<Double> result = new ArrayList<Double>();
 			for (int i = 0; i < testDataValues.length; i++) {
-				Map<Double, String> map = new TreeMap<Double, String>();
+				Map<Double, Double> map = new TreeMap<Double, Double>();
 				for (int j = 0; j < trainingDataValues.length; j++) {
 					double[] attributesValues = new double[trainingDataValues[0].length];
 					double sum = 0.0;
@@ -115,11 +117,11 @@ public class knnAlgorithm {
 						sum = sum + attributesValues[k];
 					}
 					double distance = 1 / (Math.sqrt(sum));
-					map.put(distance, predictionValues[j]);
+					map.put(distance, trainingSet.get(j).classValue());
 				}
-				List<String> list = new ArrayList<String>(map.values());
+				List<Double> list = new ArrayList<Double>(map.values());
 				int[] arr = new int[k];
-				String tmp = "";
+				double tmp = 0.0;
 				int max = 0;
 				for (int p = 0; p < k; p++) {
 					for (int q = 0; q < k; q++) {
