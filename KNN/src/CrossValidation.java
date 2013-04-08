@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 
 import weka.classifiers.trees.J48;
@@ -23,7 +24,7 @@ public class CrossValidation {
 			J48 j48 = new J48();
 			j48.buildClassifier(data);
 			CrossValidation cv = new CrossValidation(data, 5);
-			cv.doCrossValidation(data, j48);
+			System.out.println(cv.doCrossValidation(data, j48));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -63,6 +64,8 @@ public class CrossValidation {
         dataNum = performPermutation();
         int sizePerFold = sizeOfInput/k;
         
+        //System.out.println(Arrays.toString(dataNum));
+        
         // use bigArrayList to store k folds
         for (int i=0; i<k; i++){
         	bigArrayList.add(new Instances(dataSet, sizeOfInput));
@@ -70,10 +73,18 @@ public class CrossValidation {
         
         int count=0;
         for(int i=0; i<k; i++){
-        	for(int j=count; j<sizePerFold; j++){
-        		bigArrayList.get(i).add(dataSet.get(dataNum[j]));
+        	Instances fold = bigArrayList.get(i);
+        	for(int j=count; j<sizePerFold*(i+1); j++){
+        		//System.out.println(j);
+        		Instance in = dataSet.get(dataNum[j]);
+        		//System.out.println(in);	
+        		fold.add(dataSet.get(dataNum[j]));
         	}
+        	
+        	//System.out.println(fold);
+        	
         	count += sizePerFold;
+        	//System.out.println(i);
         }
 
         return bigArrayList;
@@ -131,6 +142,7 @@ public class CrossValidation {
 		
 		for(int i=0; i<k; i++){
 			Instances test = bigArrayList.get(i);
+			
 			
 			//System.out.println(test);
 			
