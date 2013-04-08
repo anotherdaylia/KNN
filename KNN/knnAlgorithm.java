@@ -10,24 +10,32 @@ import java.util.TreeMap;
 
 import weka.core.Instances;
 import weka.core.converters.ArffLoader.ArffReader;
+import weka.core.converters.ConverterUtils.DataSource;
 
 public class knnAlgorithm {
-  private final int k = 90;
+	private final int k = 90;
+	private String[] attributes;
+	private double[] attributesMax;;
+	private double[] attributesMin;
+	private String[] attributeType;
+	private Instances trainingSet;
+	private Instances testSet;
 
-	public String storeData(BufferedReader trainReader, BufferedReader testReader) {
+	public knnAlgorithm(Instances trainingSet, Instances testSet) {
+		this.trainingSet = trainingSet;
+		this.testSet = testSet;
+		attributes = new String[trainingSet.numAttributes()];
+		attributesMax = new double[trainingSet.numAttributes()];
+		attributesMin = new double[trainingSet.numAttributes()];
+		attributeType = new String[trainingSet.numAttributes()];
+	}
+
+	public String storeData() {
 		try {
-			ArffReader arffTrain = new ArffReader(trainReader);
-			Instances data = arffTrain.getData();
-			ArffReader arffTest = new ArffReader(testReader);
-			Instances testData = arffTest.getData();
 
-			String[] attributes = new String[data.numAttributes()];
-			double[] attributesMax = new double[data.numAttributes()];
-			double[] attributesMin = new double[data.numAttributes()];
-			String[] attributeType = new String[data.numAttributes()];
 			// String[] nominalValues = new String[data.numAttributes()];
-			for (int i = 0; i < data.numAttributes(); i++) {
-				attributes[i] = data.attribute(i).toString();
+			for (int i = 0; i < trainingSet.numAttributes(); i++) {
+				attributes[i] = trainingSet.attribute(i).toString();
 				if (attributes[i].contains("real")
 						|| attributes[i].contains("numeric")) {
 					attributeType[i] = "real";
@@ -37,16 +45,16 @@ public class knnAlgorithm {
 				attributesMax[i] = 0;
 				attributesMin[i] = 0;
 			}
-			Double[][] trainingDataValues = new Double[data.numInstances()][data
+			Double[][] trainingDataValues = new Double[trainingSet
+					.numInstances()][trainingSet.numAttributes()];
+			Double[][] testDataValues = new Double[testSet.numInstances()][testSet
 					.numAttributes()];
-			Double[][] testDataValues = new Double[testData.numInstances()][testData
-					.numAttributes()];
-			String[] predictionValues = new String[data.numInstances()];
-			for (int i = 0; i < data.numInstances(); i++) {
-				String[] str = new String[data.numAttributes()];
-				str = data.instance(i).toString().split(",");
-				for (int j = 0; j < data.numAttributes(); j++) {
-					if (j == data.numAttributes() - 1) {
+			String[] predictionValues = new String[trainingSet.numInstances()];
+			for (int i = 0; i < trainingSet.numInstances(); i++) {
+				String[] str = new String[trainingSet.numAttributes()];
+				str = trainingSet.instance(i).toString().split(",");
+				for (int j = 0; j < trainingSet.numAttributes(); j++) {
+					if (j == trainingSet.numAttributes() - 1) {
 						predictionValues[i] = str[j];
 						break;
 					}
@@ -67,10 +75,10 @@ public class knnAlgorithm {
 				}
 			}
 			normalize(trainingDataValues, attributesMax, attributesMin);
-			for (int i = 0; i < testData.numInstances(); i++) {
-				String[] str = new String[testData.numAttributes()];
-				str = data.instance(i).toString().split(",");
-				for (int j = 0; j < data.numAttributes() - 1; j++) {
+			for (int i = 0; i < testSet.numInstances(); i++) {
+				String[] str = new String[testSet.numAttributes()];
+				str = trainingSet.instance(i).toString().split(",");
+				for (int j = 0; j < trainingSet.numAttributes() - 1; j++) {
 
 					if (attributeType[j].equals("real")) {
 						double d = Double.parseDouble(str[j]);
@@ -123,9 +131,9 @@ public class knnAlgorithm {
 				sb.append(tmp);
 				sb.append(",");
 			}
-			sb.replace(sb.length()-1, sb.length(), "");
+			sb.replace(sb.length() - 1, sb.length(), "");
 			return sb.toString();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
 		}
@@ -151,18 +159,17 @@ public class knnAlgorithm {
 	}
 
 	public static void main(String[] args) {
-		knnAlgorithm knn = new knnAlgorithm();
-		BufferedReader trainReader;
+		DataSource source1 = null;
+		DataSource source2 = null;
 		try {
-			trainReader = new BufferedReader(
-					new FileReader(
-							"C:/Users/vivek/Downloads/task11a_2013(3)/task11a_2013/attachments/trainProdSelection/trainProdSelection.arff"));
-
-			BufferedReader testReader = new BufferedReader(
-					new FileReader(
-							"C:/Users/vivek/Downloads/task11a_2013(3)/task11a_2013/attachments/testProdSelection/testProdSelection.arff"));
-			System.out.println(knn.storeData(trainReader, testReader));
+			source1 = new DataSource("C:/Users/vivek/Downloads/task11a_2013(3)/task11a_2013/attachments/trainProdSelection/trainProdSelection.arff");
+			source2 = new DataSource("C:/Users/vivek/Downloads/task11a_2013(3)/task11a_2013/attachments/testProdSelection/testProdSelection.arff");
+			knnAlgorithm knn = new knnAlgorithm(source1.getDataSet(), source2.getDataSet());
+			System.out.println(knn.storeData());
 		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
