@@ -8,7 +8,7 @@ import weka.core.Instances;
 import weka.core.converters.ConverterUtils.DataSource;
 
 public class knnAlgorithm {
-	private final int k = 5;
+	private int k = 5;
 	private String[] attributes;
 	private double[] attributesMax;;
 	private double[] attributesMin;
@@ -16,30 +16,31 @@ public class knnAlgorithm {
 	private Instances trainingSet;
 	private Instances testSet;
 
-	public knnAlgorithm(Instances trainingSet, Instances testSet) {
-		this.trainingSet = trainingSet;
-		this.testSet = testSet;
-		this.trainingSet.setClassIndex(trainingSet.numAttributes()-1);
-		this.testSet.setClassIndex(testSet.numAttributes()-1);
-		attributes = new String[trainingSet.numAttributes()];
-		attributesMax = new double[trainingSet.numAttributes()];
-		attributesMin = new double[trainingSet.numAttributes()];
-		attributeType = new String[trainingSet.numAttributes()];
-		for (int i = 0; i < trainingSet.numAttributes(); i++) {
-			attributes[i] = trainingSet.attribute(i).toString();
-			if (attributes[i].contains("real")
-					|| attributes[i].contains("numeric")) {
-				attributeType[i] = "real";
-			} else {
-				attributeType[i] = "nominal";
-			}
-			attributesMax[i] = 0;
-			attributesMin[i] = 0;
-		}
+	public knnAlgorithm(int k) {
+		this.k = k;
 	}
 
-	public List<Double> storeData() {
+	public List<Double> clasifyInstances(Instances trainingSet, Instances testSet) {
 		try {
+			this.trainingSet = trainingSet;
+			this.testSet = testSet;
+			this.trainingSet.setClassIndex(trainingSet.numAttributes()-1);
+			this.testSet.setClassIndex(testSet.numAttributes()-1);
+			attributes = new String[trainingSet.numAttributes()];
+			attributesMax = new double[trainingSet.numAttributes()];
+			attributesMin = new double[trainingSet.numAttributes()];
+			attributeType = new String[trainingSet.numAttributes()];
+			for (int i = 0; i < trainingSet.numAttributes(); i++) {
+				attributes[i] = trainingSet.attribute(i).toString();
+				if (attributes[i].contains("real")
+						|| attributes[i].contains("numeric")) {
+					attributeType[i] = "real";
+				} else {
+					attributeType[i] = "nominal";
+				}
+				attributesMax[i] = 0;
+				attributesMin[i] = 0;
+			}
 
 			// String[] nominalValues = new String[data.numAttributes()];
 			Double[][] trainingDataValues = new Double[trainingSet
@@ -168,12 +169,18 @@ public class knnAlgorithm {
 		DataSource source2 = null;
 		try {
 			source1 = new DataSource(
-					"C:/Users/vivek/Downloads/task11a_2013(3)/task11a_2013/attachments/trainProdSelection/trainProdSelection.arff");
+					"trainProdSelection.arff");
 			source2 = new DataSource(
-					"C:/Users/vivek/Downloads/task11a_2013(3)/task11a_2013/attachments/testProdSelection/testProdSelection.arff");
-			knnAlgorithm knn = new knnAlgorithm(source1.getDataSet(),
-					source2.getDataSet());
-			System.out.println(knn.storeData());
+					"testProdSelection.arff");
+			knnAlgorithm knn = new knnAlgorithm(3);
+			Instances inst1 = source1.getDataSet();
+			Instances inst2 = source1.getDataSet();
+			List<Double> list = knn.clasifyInstances(source1.getDataSet(), source2.getDataSet());
+			inst1.setClassIndex(source1.getDataSet().numAttributes()-1);
+			inst2.setClassIndex(source2.getDataSet().numAttributes()-1);
+			for(int i=0;i<list.size();i++) {
+				System.out.println(inst1.classAttribute().value(list.get(i).intValue()));
+			}
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
