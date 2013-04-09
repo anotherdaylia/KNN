@@ -119,13 +119,12 @@ public class CrossValidation {
 		
 		for(int i=0; i<k; i++){
 			Instances testFold = bigArrayList.get(i);
-			testFoldSize = bigArrayList.get(i).size();
+			testFoldSize = testFold.size();
 			
 			List<Double> predictList = knn.clasifyInstances(getTrainingData(i), bigArrayList.get(i));
 			
 			for(int j=0; j<testFoldSize; j++){
-				Instance in = testFold.get(j);
-				if(predictList.get(j) == in.classValue()){
+				if(predictList.get(j) == testFold.get(j).classValue()){
 					isTheSame++;
 				}
 			}
