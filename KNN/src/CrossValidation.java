@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 import weka.classifiers.trees.J48;
@@ -64,7 +65,6 @@ public class CrossValidation {
         dataNum = performPermutation();
         int sizePerFold = sizeOfInput/k;
         
-        //System.out.println(Arrays.toString(dataNum));
         
         // use bigArrayList to store k folds
         for (int i=0; i<k; i++){
@@ -75,16 +75,11 @@ public class CrossValidation {
         for(int i=0; i<k; i++){
         	Instances fold = bigArrayList.get(i);
         	for(int j=count; j<sizePerFold*(i+1); j++){
-        		//System.out.println(j);
+
         		Instance in = dataSet.get(dataNum[j]);
-        		//System.out.println(in);	
         		fold.add(dataSet.get(dataNum[j]));
         	}
-        	
-        	//System.out.println(fold);
-        	
         	count += sizePerFold;
-        	//System.out.println(i);
         }
 
         return bigArrayList;
@@ -115,10 +110,10 @@ public class CrossValidation {
 		
 		for(int i=0; i<k; i++){
 			Instances oneFold = bigArrayList.get(i);
-			Instances predictList = knn.classifyAttribute(getTrainingData(i), bigArrayList.get(i));
+			List<Double> predictList = knn.classifyAttribute(getTrainingData(i), bigArrayList.get(i));
 			
 			for(int j=0; j<sizePerFold; j++){
-				if(predictList.get(j).equals(oneFold.get(j))){
+				if(predictList.get(j) == oneFold.get(j).classValue()){
 					isTheSame++;
 				}
 			}
@@ -143,8 +138,6 @@ public class CrossValidation {
 			Instances test = bigArrayList.get(i);
 			isTheSame = 0;
 			
-			//System.out.println(test);
-			
 			for (int j = 0; j < sizePerFold; j++) {
 				Instance in = test.get(j);
 
@@ -153,8 +146,6 @@ public class CrossValidation {
 				}
 			}
 			
-			//System.out.println(isTheSame);
-			//System.out.println(sizePerFold);
 			accuracyPerFold[i] = (double)isTheSame/(double)sizePerFold;
 		}
 		
@@ -170,8 +161,8 @@ public class CrossValidation {
 	}
 	
 	public class KNN {
-		public Instances classifyAttribute(Instances trainingData, Instances testData){
-			return new Instances(testData, testData.size());
+		public List<Double> classifyAttribute(Instances trainingData, Instances testData){
+			return new ArrayList<Double>();
 		}	
 	}
 	
