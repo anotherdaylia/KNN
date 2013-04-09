@@ -7,7 +7,7 @@ import java.util.TreeMap;
 import weka.core.Instances;
 import weka.core.converters.ConverterUtils.DataSource;
 
-public class knnAlgorithm {
+public class KnnAlgorithm {
 	private int k = 5;
 	private String[] attributes;
 	private double[] attributesMax;;
@@ -16,7 +16,7 @@ public class knnAlgorithm {
 	private Instances trainingSet;
 	private Instances testSet;
 
-	public knnAlgorithm(int k) {
+	public KnnAlgorithm(int k) {
 		this.k = k;
 	}
 
@@ -72,6 +72,7 @@ public class knnAlgorithm {
 					}
 				}
 			}
+
 			normalize(trainingDataValues, attributesMax, attributesMin);
 			for (int i = 0; i < testSet.numInstances(); i++) {
 				String[] str = new String[testSet.numAttributes()];
@@ -136,6 +137,7 @@ public class knnAlgorithm {
 					}
 
 				}
+				
 				result.add(tmp);
 			}
 			return result;
@@ -172,7 +174,7 @@ public class knnAlgorithm {
 					"trainProdSelection.arff");
 			source2 = new DataSource(
 					"testProdSelection.arff");
-			knnAlgorithm knn = new knnAlgorithm(3);
+			KnnAlgorithm knn = new KnnAlgorithm(3);
 			Instances inst1 = source1.getDataSet();
 			Instances inst2 = source1.getDataSet();
 			List<Double> list = knn.clasifyInstances(source1.getDataSet(), source2.getDataSet());

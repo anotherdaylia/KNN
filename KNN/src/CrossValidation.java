@@ -18,18 +18,18 @@ public class CrossValidation {
 		DataSource source = null;
 		Instances data = null;
 		try {
-			source = new DataSource("tic-tac-toe.data.arff");
+			source = new DataSource("trainProdSelection.arff");
 			data = source.getDataSet();
 			if (data.classIndex() == -1)
 				data.setClassIndex(data.numAttributes() - 1);
 			J48 j48 = new J48();
 			j48.buildClassifier(data);
 			
-			knnAlgorithm knn = new knnAlgorithm(5);
+			KnnAlgorithm knn = new KnnAlgorithm(3);
 			CrossValidation cv = new CrossValidation(data, 5);
-			//System.out.println(cv.doCrossValidation(data, knn));
+			System.out.println(cv.doCrossValidation(data, knn));
 			
-			System.out.println(cv.doCrossValidation(data, j48));
+			//System.out.println(cv.doCrossValidation(data, j48));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -111,7 +111,7 @@ public class CrossValidation {
 		return trainingData;
 	}
 	
-	public double doCrossValidation(Instances dataSet, knnAlgorithm knn){
+	public double doCrossValidation(Instances dataSet, KnnAlgorithm knn){
 		double accuracy = 0.0;
 		double[] accuracyPerFold = new double[k];
 		int isTheSame = 0;
@@ -121,8 +121,11 @@ public class CrossValidation {
 			Instances testFold = bigArrayList.get(i);
 			testFoldSize = testFold.size();
 			
-			List<Double> predictList = knn.clasifyInstances(getTrainingData(i), bigArrayList.get(i));
+			// Claire changes
+//			knn.buildClassifier(getTrainingData(i));
+			List<Double> predictList = knn.clasifyInstances(getTrainingData(i), testFold);
 			
+			isTheSame = 0;
 			for(int j=0; j<testFoldSize; j++){
 				if(predictList.get(j) == testFold.get(j).classValue()){
 					isTheSame++;
@@ -130,6 +133,8 @@ public class CrossValidation {
 			}
 			accuracyPerFold[i] = (double)isTheSame/(double)testFoldSize;
 		}
+		// Claire changes
+		System.out.println(Arrays.toString(accuracyPerFold));
 		
 		for(int i=0; i<k; i++){
 			accuracy += accuracyPerFold[i];
