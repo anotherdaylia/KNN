@@ -18,13 +18,17 @@ public class CrossValidation {
 		DataSource source = null;
 		Instances data = null;
 		try {
-			source = new DataSource("whether.arff");
+			source = new DataSource("tic-tac-toe.data.arff");
 			data = source.getDataSet();
 			if (data.classIndex() == -1)
 				data.setClassIndex(data.numAttributes() - 1);
 			J48 j48 = new J48();
 			j48.buildClassifier(data);
+			
+			knnAlgorithm knn = new knnAlgorithm(5);
 			CrossValidation cv = new CrossValidation(data, 5);
+			//System.out.println(cv.doCrossValidation(data, knn));
+			
 			System.out.println(cv.doCrossValidation(data, j48));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -64,7 +68,11 @@ public class CrossValidation {
         int[] dataNum = new int[sizeOfInput];
         dataNum = performPermutation();
         int sizePerFold = sizeOfInput/k;
+        int reminder = sizeOfInput % k;
         
+        if(reminder == 0){
+        	sizePerFold = sizeOfInput/k;
+        } 
         
         // use bigArrayList to store k folds
         for (int i=0; i<k; i++){
@@ -73,51 +81,55 @@ public class CrossValidation {
         
         int count=0;
         for(int i=0; i<k; i++){
-        	Instances fold = bigArrayList.get(i);
-        	for(int j=count; j<sizePerFold*(i+1); j++){
-
-        		Instance in = dataSet.get(dataNum[j]);
-        		fold.add(dataSet.get(dataNum[j]));
-        	}
-        	count += sizePerFold;
+        	Instances folds = bigArrayList.get(i);
+        	
+        	if (i<reminder){
+        		for(int j=count; j<sizePerFold*(i+1) + 1; j++){
+            		folds.add(dataSet.get(dataNum[j]));
+            	}
+            	count += sizePerFold;
+        	} else{
+        		for(int j=count; j<sizePerFold*(i+1); j++){
+            		folds.add(dataSet.get(dataNum[j]));
+            	}
+            	count += sizePerFold;
+        	}	
         }
 
         return bigArrayList;
 	}
 	
 	public Instances getTrainingData(int n){
-		int sizePerFold = sizeOfInput/k;
-		int sizeOfTrainingData = sizeOfInput - sizePerFold;
-		
-		Instances trainingData = new Instances(dataSet, sizeOfTrainingData);
+		Instances trainingData = new Instances(dataSet, sizeOfInput);
 		
 		for(int i=0; i<k; i++){
 			if(i == n) continue;
 			Instances oneFold = bigArrayList.get(i);
 			trainingData.addAll(oneFold);
-//			for(int j=0; i<sizePerFold; j++){
-//				trainingData.add(oneFold.get(j));
-//			}
 		}
+		
 		return trainingData;
 	}
 	
-	public double doCrossValidation(Instances dataSet, KNN knn){
+	public double doCrossValidation(Instances dataSet, knnAlgorithm knn){
 		double accuracy = 0.0;
 		double[] accuracyPerFold = new double[k];
 		int isTheSame = 0;
-		int sizePerFold = sizeOfInput/k;
+		int testFoldSize = 0;
 		
 		for(int i=0; i<k; i++){
-			Instances oneFold = bigArrayList.get(i);
-			List<Double> predictList = knn.classifyAttribute(getTrainingData(i), bigArrayList.get(i));
+			Instances testFold = bigArrayList.get(i);
+			testFoldSize = bigArrayList.get(i).size();
 			
-			for(int j=0; j<sizePerFold; j++){
-				if(predictList.get(j) == oneFold.get(j).classValue()){
+			List<Double> predictList = knn.clasifyInstances(getTrainingData(i), bigArrayList.get(i));
+			
+			for(int j=0; j<testFoldSize; j++){
+				Instance in = testFold.get(j);
+				if(predictList.get(j) == in.classValue()){
 					isTheSame++;
 				}
 			}
-			accuracyPerFold[i] = (double)isTheSame/(double)sizePerFold;
+			accuracyPerFold[i] = (double)isTheSame/(double)testFoldSize;
 		}
 		
 		for(int i=0; i<k; i++){
@@ -130,23 +142,22 @@ public class CrossValidation {
 	public double doCrossValidation(Instances dataSet, J48 knn) throws Exception{
 		double accuracy = 0.0;
 		double[] accuracyPerFold = new double[k];
-		int isTheSame = 0;
-		int sizePerFold = sizeOfInput/k;		
+		int testFoldSize = 0;		
 		
 		for(int i=0; i<k; i++){
 			knn.buildClassifier(this.getTrainingData(i));
-			Instances test = bigArrayList.get(i);
-			isTheSame = 0;
+			Instances testFold = bigArrayList.get(i);
+			testFoldSize = testFold.size();
+			int isTheSame = 0;
 			
-			for (int j = 0; j < sizePerFold; j++) {
-				Instance in = test.get(j);
+			for (int j = 0; j < testFoldSize; j++) {
+				Instance in = testFold.get(j);
 
 				if(knn.classifyInstance(in) == in.classValue()) {
 					isTheSame++;
 				}
 			}
-			
-			accuracyPerFold[i] = (double)isTheSame/(double)sizePerFold;
+			accuracyPerFold[i] = (double)isTheSame/(double)testFoldSize;
 		}
 		
 		System.out.println(Arrays.toString(accuracyPerFold));
@@ -155,15 +166,8 @@ public class CrossValidation {
 			accuracy += accuracyPerFold[i];
 		}
 		
-		System.out.println("Total accuracy: " + accuracy);
 		accuracy = accuracy/k;
 		return accuracy;
-	}
-	
-	public class KNN {
-		public List<Double> classifyAttribute(Instances trainingData, Instances testData){
-			return new ArrayList<Double>();
-		}	
 	}
 	
 }
