@@ -1,6 +1,7 @@
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.TreeMap;
 
 import weka.core.Instance;
@@ -16,6 +17,7 @@ public class KnnWithWeights {
 	private double[] weights;
 	private double[][] normalizedTraining;
 	private double[][] normalizedTest;
+
 
 	public KnnWithWeights(int k) {
 		this.k = k;
@@ -35,16 +37,8 @@ public class KnnWithWeights {
 				map.put(similarity, j);	
 			}
 						
-			double[] values = new double[trainingSet.classAttribute().numValues()];
-			for (int j = 0; j < k; j++) {				
-				double key = map.lastKey();
-				int index = map.remove(key);
-				values[(int) trainingSet.instance(index).classValue()] += key;
-			}
-
-			r.add((double) getMaxIndex(values));
-		}
-		
+			r.add(getClassValue(map));
+		}		
 		return r;
 	}
 	
@@ -65,12 +59,19 @@ public class KnnWithWeights {
 		}
 		
 		CrossValidation cv = new CrossValidation(trainingSet, 5);
-		for (int i = 0; i < trainingSet.numAttributes(); i++) {
-			if (i == trainingSet.classIndex()) continue;
-			testStep(cv, i, 0.5);
-			testStep(cv, i, 0.1);
-			
-			System.out.println(Arrays.toString(weights));
+		boolean change = true;
+		while (change) {
+			change = false;
+			for (int i = 0; i < trainingSet.numAttributes(); i++) {
+				if (i == trainingSet.classIndex()) continue;
+				double oldW = weights[i];
+				testStep(cv, i, 0.5);
+				testStep(cv, i, 0.1);	
+				if (!change) {
+					change = weights[i] - oldW > CrossValidation.epsilon;
+				}
+				//System.out.println(Arrays.toString(weights));
+			}
 		}
 	}
 	
@@ -82,7 +83,7 @@ public class KnnWithWeights {
 			oldAccuracy = newAccuracy;
 			newAccuracy = cv.weightsCrossvalidation(trainingSet, this, weights);
 			
-			if (oldAccuracy >= newAccuracy) {
+			if (oldAccuracy == newAccuracy || oldAccuracy - newAccuracy >= CrossValidation.epsilon) {
 				weights[attrIndex] -= step;
 				break;
 			}
@@ -94,54 +95,45 @@ public class KnnWithWeights {
 		this.trainingSet = trainingSet;
 		this.testSet = testSet;
 		this.weights = weights;
-		//System.out.println(Arrays.toString(weights));
 		getNumRange();
 		normalizedTraining = normalize(trainingSet);
 		normalizedTest = normalize(testSet);
 		
  		for (int i = 0; i < normalizedTest.length; i++) {			
 			TreeMap<Double, Integer> map = new TreeMap<Double, Integer>();
-//			System.out.println("Test Instance: " + testSet.instance(0));
-//			System.out.println(Arrays.toString(normalizedTest[0]));
-//			System.out.println();
 			for (int j = 0; j < trainingSet.numInstances(); j++) {			
 				double similarity = getSimilarity(i, j);
-//				System.out.println("Training instance " + j + ": " + trainingSet.instance(j));
-//				System.out.println("Normalized: " + Arrays.toString(normalizedTraining[j]));
-//				System.out.println("similarity: " + similarity);
 				map.put(similarity, j);	
-				//System.out.println(map.get(similarity));
 			}
-//			
-//			while (map.size() > 181) {
-//				Double key = map.lastKey();
-//				System.out.println("key: " + key);
-//				int index = map.remove(key);
-//				Instance in = trainingSet.instance(index);
-//				System.out.println("Instance: " + in);	
-//				System.out.println(Arrays.toString(normalizedTraining[i ndex]));
-//			}
-						
+			
+			r.add(getClassValue(map));
+		}	
+		return r;
+	}
+	
+	private double getClassValue(TreeMap<Double, Integer> map) {
+		if (trainingSet.classAttribute().isNominal()) {	
 			double[] values = new double[trainingSet.classAttribute().numValues()];
 			for (int j = 0; j < k; j++) {				
 				double key = map.lastKey();
 				int index = map.remove(key);
-//				System.out.println("Instance No" + index);
-//				System.out.println(trainingSet.instance(index));
-//				System.out.println(key);
 				values[(int) trainingSet.instance(index).classValue()] += key;
 			}
 			
-//			System.out.println(Arrays.toString(values));
-//			System.out.println(index);
-			r.add((double) getMaxIndex(values));
+			return getMaxIndex(values);
+		} else {
+			double r = 0;			
+			double totalS = 0;
+			for (int i = 0; i < k; i++) {
+				double key = map.lastKey();
+				totalS += key;
+				int index = map.remove(key);
+				r += trainingSet.instance(index).classValue() * key;
+			}
 			
-//			System.out.println(Arrays.toString(values));
+			return r / totalS;
 		}
-	
-//		System.out.println(Arrays.toString(r.toArray()));
 		
-		return r;
 	}
 
 	private int getMaxIndex(double[] a) {
@@ -260,9 +252,9 @@ public class KnnWithWeights {
 		DataSource source2 = null;
 		try {
 			source1 = new DataSource(
-					"trainProdSelection.arff");
+					"trainProdIntro.real.arff");
 			source2 = new DataSource(
-					"testProdSelection.arff");
+					"testProdIntro.real.arff");
 			KnnWithWeights knn = new KnnWithWeights(3);
 			Instances inst1 = source1.getDataSet();
 			Instances inst2 = source2.getDataSet();
@@ -270,15 +262,13 @@ public class KnnWithWeights {
 			inst1.setClassIndex(source1.getDataSet().numAttributes()-1);
 			inst2.setClassIndex(source2.getDataSet().numAttributes()-1);
 			
-			knn.classifyInstances(inst1, inst2);
-//			for(int i=0;i<list.size();i++) {
-//				System.out.println(inst1.classAttribute().value(list.get(i).intValue()));
-//			}
+			List<Double> list = knn.classifyInstances(inst1, inst2);
+			for(int i=0;i<list.size();i++) {
+				System.out.println(list.get(i));
+			}
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

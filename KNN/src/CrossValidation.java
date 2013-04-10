@@ -13,17 +13,17 @@ public class CrossValidation {
 	private int k;           //folds
 	private int sizeOfInput; //size of entire data size
 	private ArrayList<Instances> bigArrayList;
+	public static final double epsilon = 1E-17;
 	
 	public static void main(String[] args) {
 		DataSource source = null;
 		Instances data = null;
 		try {
-			source = new DataSource("trainProdSelection.arff");
+			source = new DataSource("trainProdIntro.real.arff");
+//			source = new DataSource("trainProdSelection.arff");			
 			data = source.getDataSet();
 			if (data.classIndex() == -1)
 				data.setClassIndex(data.numAttributes() - 1);
-			J48 j48 = new J48();
-			j48.buildClassifier(data);
 			
 			KnnWithWeights knn = new KnnWithWeights(3);
 			CrossValidation cv = new CrossValidation(data, 5);
@@ -32,9 +32,7 @@ public class CrossValidation {
 			//System.out.println(cv.doCrossValidation(data, j48));
 		} catch (Exception e) {
 			e.printStackTrace();
-		}
-		
-		
+		}				
 	}
 	
 	public CrossValidation(Instances dataSet, int k){
@@ -129,7 +127,7 @@ public class CrossValidation {
 			
 			isTheSame = 0;
 			for(int j=0; j<testFoldSize; j++){
-				if(predictList.get(j) == testFold.get(j).classValue()){
+				if(checkSame(predictList.get(j), testFold.get(j).classValue())){
 					isTheSame++;
 				}
 			}
@@ -146,6 +144,16 @@ public class CrossValidation {
 		return accuracy;
 	}
 	
+	private boolean checkSame(double predict, double actual) {
+		if (dataSet.classAttribute().isNominal()) {
+			return predict == actual;
+		} else if (dataSet.classAttribute().isNumeric()) {
+			return (predict > 19.5) && (actual > 19.5);
+		}
+		
+		return false;
+	}
+	
 	public double doCrossValidation(Instances dataSet, KnnWithWeights knn){
 		double accuracy = 0.0;
 		double[] accuracyPerFold = new double[k];
@@ -157,12 +165,13 @@ public class CrossValidation {
 			Instances testFold = bigArrayList.get(i);
 			testFoldSize = testFold.size();
 			
-			// Claire changes		
+			// Claire changes	
 			List<Double> predictList = knn.classifyInstances(getTrainingData(i), testFold);
-			
+			//System.out.println(Arrays.toString(predictList.toArray()));
+			//System.out.println(testFold);
 			isTheSame = 0;
 			for(int j=0; j<testFoldSize; j++){
-				if(predictList.get(j) == testFold.get(j).classValue()){
+				if(checkSame(predictList.get(j), testFold.get(j).classValue())){
 					isTheSame++;
 				}
 			}
