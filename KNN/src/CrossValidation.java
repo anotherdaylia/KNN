@@ -47,7 +47,8 @@ public class CrossValidation {
 	private int[] performPermutation() {
         int j = 0;
         int k; 
-        Random rand = new Random();
+        int seed = 5 % sizeOfInput;
+        Random rand = new Random(seed);
         
         int[] dataNum = new int[sizeOfInput];
         for (int i = 0; i < sizeOfInput; i++) {
@@ -123,7 +124,12 @@ public class CrossValidation {
 			testFoldSize = testFold.size();
 			
 			// Claire changes
+<<<<<<< HEAD
 			List<Double> predictList = knn.classifyWithWeights(getTrainingData(i), testFold);
+=======
+			knn.buildClassifier(getTrainingData(i));
+			List<Double> predictList = knn.classifyWithWeights(testFold);
+>>>>>>> 39de44508729dd4455cccee9f6c77b76258ebf66
 			
 			isTheSame = 0;
 			for(int j=0; j<testFoldSize; j++){
