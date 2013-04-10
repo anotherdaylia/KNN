@@ -12,6 +12,7 @@ public class KnnWithWeights {
 	private double[] attributesMax;;
 	private double[] attributesMin;
 	private Instances trainingSet;
+	private Instances testSet;
 	private double[] weights;
 	private double[][] normalizedTraining;
 	private double[][] normalizedTest;
@@ -38,19 +39,24 @@ public class KnnWithWeights {
 		
 	}
 	
-	public ArrayList<Double> classifyWithWeights(Instances testSet) {
+	public ArrayList<Double> classifyWithWeights(Instances trainSet, Instances testSet) {
+		this.trainingSet = trainSet;
+		this.testSet = testSet;
+		getNumRange();
 		ArrayList<Double> r = new ArrayList<Double>();
-		
+		normalizedTraining = normalize(trainingSet);
 		normalizedTest = normalize(testSet);
 		
-		for (int i = 0; i < normalizedTest.length; i++) {			
+ 		for (int i = 0; i < normalizedTest.length; i++) {			
 			TreeMap<Double, Integer> map = new TreeMap<Double, Integer>();
 //			System.out.println("Test Instance: " + testSet.instance(0));
 //			System.out.println(Arrays.toString(normalizedTest[0]));
 //			System.out.println();
 			for (int j = 0; j < trainingSet.numInstances(); j++) {			
-				double similarity = getSimilarity(0, j);
-				//System.out.println("similarity: " + similarity);
+				double similarity = getSimilarity(i, j);
+//				System.out.println("Training instance " + j + ": " + trainingSet.instance(j));
+//				System.out.println("Normalized: " + Arrays.toString(normalizedTraining[j]));
+//				System.out.println("similarity: " + similarity);
 				map.put(similarity, j);	
 				//System.out.println(map.get(similarity));
 			}
@@ -61,17 +67,19 @@ public class KnnWithWeights {
 //				int index = map.remove(key);
 //				Instance in = trainingSet.instance(index);
 //				System.out.println("Instance: " + in);	
-//				System.out.println(Arrays.toString(normalizedTraining[index]));
+//				System.out.println(Arrays.toString(normalizedTraining[i ndex]));
 //			}
 						
-			int[] values = new int[trainingSet.classAttribute().numValues()];
+			double[] values = new double[trainingSet.classAttribute().numValues()];
 			for (int j = 0; j < k; j++) {				
 				double key = map.lastKey();
 				int index = map.remove(key);
-				System.out.println(trainingSet.instance(index));
-				System.out.println(key);
-				values[(int) trainingSet.instance(index).classValue()]++;
+//				System.out.println("Instance No" + index);
+//				System.out.println(trainingSet.instance(index));
+//				System.out.println(key);
+				values[(int) trainingSet.instance(index).classValue()] += key;
 			}
+			
 //			System.out.println(Arrays.toString(values));
 //			System.out.println(index);
 			r.add((double) getMaxIndex(values));
@@ -84,7 +92,7 @@ public class KnnWithWeights {
 		return r;
 	}
 
-	private int getMaxIndex(int[] a) {
+	private int getMaxIndex(double[] a) {
 		int maxIndex = 0;
 		for (int i = 0; i < a.length; i++) {
 			if (a[i] > a[maxIndex]) {
@@ -108,7 +116,7 @@ public class KnnWithWeights {
 			}
 		}
 		
-		if (r == 0) return 1;
+		if (r == 0) return Double.MAX_VALUE;
 		return 1 / (Math.sqrt(r));
 	}
 	
@@ -147,6 +155,24 @@ public class KnnWithWeights {
 			}
 		}
 		
+		for (int i = 0; i < testSet.numInstances(); i++) {
+			Instance in = testSet.get(i);			
+			for (int j = 0; j < testSet.numAttributes(); j++) {
+				if (j == testSet.classIndex()) {
+					continue;
+				}
+											
+				if (in.attribute(j).isNumeric()) {	
+					double d = in.value(j);	
+					if (attributesMax[j] < d) {
+						attributesMax[j] = d;
+					} else if (attributesMin[j] > d) {
+						attributesMin[j] = d;
+					}
+				} 
+			}
+		}
+		
 //		System.out.println(Arrays.toString(this.attributesMax));
 //		System.out.println(Arrays.toString(this.attributesMin));
 	}
@@ -155,9 +181,9 @@ public class KnnWithWeights {
 		double[][] normalized = new double[data.numInstances()][data.numAttributes()];
 		
 		for (int i = 0; i < normalized.length; i++) {
-			Instance in = trainingSet.instance(i);
-			for (int j = 0; j < normalized[j].length - 1; j++) {
-				if (j == trainingSet.classIndex()) {
+			Instance in = data.instance(i);
+			for (int j = 0; j < normalized[i].length - 1; j++) {
+				if (j == data.classIndex()) {
 					normalized[i][j] = in.classValue();
 				} else if (in.attribute(j).isNumeric()) {
 					normalized[i][j] = normalizeHelper(in.value(j), attributesMax[j], attributesMin[j]);
@@ -181,13 +207,12 @@ public class KnnWithWeights {
 					"testProdSelection.arff");
 			KnnWithWeights knn = new KnnWithWeights(3);
 			Instances inst1 = source1.getDataSet();
-			Instances inst2 = source1.getDataSet();
+			Instances inst2 = source2.getDataSet();
 //			List<Double> list = knn.clasifyInstances(source1.getDataSet(), source2.getDataSet());
 			inst1.setClassIndex(source1.getDataSet().numAttributes()-1);
 			inst2.setClassIndex(source2.getDataSet().numAttributes()-1);
 			
-			knn.buildClassifier(inst1);
-			knn.classifyWithWeights(inst2);
+			knn.classifyWithWeights(inst1, inst2);
 //			for(int i=0;i<list.size();i++) {
 //				System.out.println(inst1.classAttribute().value(list.get(i).intValue()));
 //			}
