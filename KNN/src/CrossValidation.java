@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -19,8 +18,8 @@ public class CrossValidation {
 		DataSource source = null;
 		Instances data = null;
 		try {
-			source = new DataSource("trainProdIntro.real.arff");
-//			source = new DataSource("trainProdSelection.arff");			
+//			source = new DataSource("trainProdIntro.real.arff");
+			source = new DataSource("trainProdSelection.arff");			
 			data = source.getDataSet();
 			if (data.classIndex() == -1)
 				data.setClassIndex(data.numAttributes() - 1);
@@ -148,9 +147,8 @@ public class CrossValidation {
 		if (dataSet.classAttribute().isNominal()) {
 			return predict == actual;
 		} else if (dataSet.classAttribute().isNumeric()) {
-			return (predict > 19.5) && (actual > 19.5);
-		}
-		
+			return (predict - 19.99 > epsilon) && (actual - 19.99 > epsilon);
+		}		
 		return false;
 	}
 	
@@ -192,6 +190,7 @@ public class CrossValidation {
 		double[] accuracyPerFold = new double[k];
 		int testFoldSize = 0;		
 		
+		// change to k!
 		for(int i=0; i<k; i++){
 			knn.buildClassifier(this.getTrainingData(i));
 			Instances testFold = bigArrayList.get(i);
