@@ -27,7 +27,7 @@ public class CrossValidation {
 			
 			KnnWithWeights knn = new KnnWithWeights(3);
 			CrossValidation cv = new CrossValidation(data, 5);
-			System.out.println(cv.doCrossValidation(data, knn));
+			System.out.println("Final: " + cv.doCrossValidation(data, knn));
 			
 			//System.out.println(cv.doCrossValidation(data, j48));
 		} catch (Exception e) {
@@ -47,7 +47,8 @@ public class CrossValidation {
 	private int[] performPermutation() {
         int j = 0;
         int k; 
-        int seed = 5 % sizeOfInput;
+        int seed = 10 % sizeOfInput;
+        //System.out.println(sizeOfInput);
         Random rand = new Random(seed);
         
         int[] dataNum = new int[sizeOfInput];
@@ -112,6 +113,39 @@ public class CrossValidation {
 		return trainingData;
 	}
 	
+	public double weightsCrossvalidation(Instances dataSet, KnnWithWeights knn, double[] weights) {
+		double accuracy = 0.0;
+		double[] accuracyPerFold = new double[k];
+		int isTheSame = 0;
+		int testFoldSize = 0;
+
+		// change back to k!
+		for(int i=0; i<k; i++){
+			Instances testFold = bigArrayList.get(i);
+			testFoldSize = testFold.size();
+			
+			// Claire changes
+			List<Double> predictList = knn.classifyWithWeights(getTrainingData(i), testFold, weights);
+			
+			isTheSame = 0;
+			for(int j=0; j<testFoldSize; j++){
+				if(predictList.get(j) == testFold.get(j).classValue()){
+					isTheSame++;
+				}
+			}
+			accuracyPerFold[i] = (double)isTheSame/(double)testFoldSize;
+		}
+		// Claire changes
+		//System.out.println(Arrays.toString(accuracyPerFold));
+		
+		for(int i=0; i<k; i++){
+			accuracy += accuracyPerFold[i];
+		}
+		accuracy = accuracy/k;
+		//System.out.println(accuracy);
+		return accuracy;
+	}
+	
 	public double doCrossValidation(Instances dataSet, KnnWithWeights knn){
 		double accuracy = 0.0;
 		double[] accuracyPerFold = new double[k];
@@ -123,8 +157,8 @@ public class CrossValidation {
 			Instances testFold = bigArrayList.get(i);
 			testFoldSize = testFold.size();
 			
-			// Claire changes
-			List<Double> predictList = knn.classifyWithWeights(getTrainingData(i), testFold);
+			// Claire changes		
+			List<Double> predictList = knn.classifyInstances(getTrainingData(i), testFold);
 			
 			isTheSame = 0;
 			for(int j=0; j<testFoldSize; j++){
@@ -135,7 +169,7 @@ public class CrossValidation {
 			accuracyPerFold[i] = (double)isTheSame/(double)testFoldSize;
 		}
 		// Claire changes
-		System.out.println(Arrays.toString(accuracyPerFold));
+		//System.out.println(Arrays.toString(accuracyPerFold));
 		
 		for(int i=0; i<k; i++){
 			accuracy += accuracyPerFold[i];
@@ -165,7 +199,7 @@ public class CrossValidation {
 			accuracyPerFold[i] = (double)isTheSame/(double)testFoldSize;
 		}
 		
-		System.out.println(Arrays.toString(accuracyPerFold));
+		//System.out.println(Arrays.toString(accuracyPerFold));
 		
 		for(int i=0; i<k; i++){
 			accuracy += accuracyPerFold[i];

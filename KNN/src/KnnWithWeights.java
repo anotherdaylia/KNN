@@ -21,29 +21,81 @@ public class KnnWithWeights {
 		this.k = k;
 	}
 	
-	public void buildClassifier(Instances trainingSet) {
-		// We should check the attributes first
+	public ArrayList<Double> classifyInstances(Instances trainingSet, Instances testSet) {
+		setup(trainingSet, testSet);
+		buildClassifier();
+		
+		setup(trainingSet, testSet);
+		ArrayList<Double> r = new ArrayList<Double>();
+		
+ 		for (int i = 0; i < normalizedTest.length; i++) {			
+			TreeMap<Double, Integer> map = new TreeMap<Double, Integer>();
+			for (int j = 0; j < trainingSet.numInstances(); j++) {			
+				double similarity = getSimilarity(i, j);
+				map.put(similarity, j);	
+			}
+						
+			double[] values = new double[trainingSet.classAttribute().numValues()];
+			for (int j = 0; j < k; j++) {				
+				double key = map.lastKey();
+				int index = map.remove(key);
+				values[(int) trainingSet.instance(index).classValue()] += key;
+			}
+
+			r.add((double) getMaxIndex(values));
+		}
+		
+		return r;
+	}
+	
+	private void setup(Instances trainingSet, Instances testSet) {
 		this.trainingSet = trainingSet;
+		this.testSet = testSet;
 		getNumRange();
 		normalizedTraining = normalize(trainingSet);
-
-//		for (double[] a : normalizedTraining) {
-//			System.out.println(Arrays.toString(a));
-//		}		
+		normalizedTest = normalize(testSet);
+	}
+	
+	public void buildClassifier() {
+		// We should check the attributes first
 		weights = new double[trainingSet.numAttributes()];
 		
 		for (int i = 0; i < weights.length; i++) {
-			weights[i] = 1;
+			weights[i] = 0.01;
 		}
 		
-		
+		CrossValidation cv = new CrossValidation(trainingSet, 5);
+		for (int i = 0; i < trainingSet.numAttributes(); i++) {
+			if (i == trainingSet.classIndex()) continue;
+			testStep(cv, i, 0.5);
+			testStep(cv, i, 0.1);
+			
+			System.out.println(Arrays.toString(weights));
+		}
 	}
 	
-	public ArrayList<Double> classifyWithWeights(Instances trainSet, Instances testSet) {
-		this.trainingSet = trainSet;
-		this.testSet = testSet;
-		getNumRange();
+	private void testStep(CrossValidation cv, int attrIndex, double step) {
+		double oldAccuracy = 0;
+		double newAccuracy = cv.weightsCrossvalidation(trainingSet, this, weights);
+		while (true) {
+			weights[attrIndex] += step;
+			oldAccuracy = newAccuracy;
+			newAccuracy = cv.weightsCrossvalidation(trainingSet, this, weights);
+			
+			if (oldAccuracy >= newAccuracy) {
+				weights[attrIndex] -= step;
+				break;
+			}
+		}
+	}
+	
+	public ArrayList<Double> classifyWithWeights(Instances trainingSet, Instances testSet, double[] weights) {
 		ArrayList<Double> r = new ArrayList<Double>();
+		this.trainingSet = trainingSet;
+		this.testSet = testSet;
+		this.weights = weights;
+		//System.out.println(Arrays.toString(weights));
+		getNumRange();
 		normalizedTraining = normalize(trainingSet);
 		normalizedTest = normalize(testSet);
 		
@@ -84,10 +136,10 @@ public class KnnWithWeights {
 //			System.out.println(index);
 			r.add((double) getMaxIndex(values));
 			
-			System.out.println(Arrays.toString(values));
+//			System.out.println(Arrays.toString(values));
 		}
 	
-		System.out.println(Arrays.toString(r.toArray()));
+//		System.out.println(Arrays.toString(r.toArray()));
 		
 		return r;
 	}
@@ -106,13 +158,16 @@ public class KnnWithWeights {
 	private double getSimilarity(int testIndex, int trainingIndex) {
 		double r = 0;
 		
+		//System.out.println("test index: " + testIndex);
+		//System.out.println("train index" + trainingIndex);
+		
 		for (int i = 0; i < trainingSet.numAttributes(); i++) {
 			if (i == trainingSet.classIndex()) continue;
 			else if (trainingSet.attribute(i).isNumeric()) {
-				r += euclideanNorm(normalizedTraining[trainingIndex][i], normalizedTest[testIndex][i]);
+				r += weights[i] * euclideanNorm(normalizedTraining[trainingIndex][i], normalizedTest[testIndex][i]);
 			} else if (trainingSet.attribute(i).isNominal() 
 					    && normalizedTraining[trainingIndex][i] != normalizedTest[testIndex][i]) {
-				r += 1;
+				r += weights[i];
 			}
 		}
 		
@@ -155,6 +210,8 @@ public class KnnWithWeights {
 			}
 		}
 		
+		if (testSet == null) return;
+		
 		for (int i = 0; i < testSet.numInstances(); i++) {
 			Instance in = testSet.get(i);			
 			for (int j = 0; j < testSet.numAttributes(); j++) {
@@ -178,6 +235,7 @@ public class KnnWithWeights {
 	}
 	
 	private double[][] normalize(Instances data) {
+		//System.out.println("--" + data.numInstances());
 		double[][] normalized = new double[data.numInstances()][data.numAttributes()];
 		
 		for (int i = 0; i < normalized.length; i++) {
@@ -212,7 +270,7 @@ public class KnnWithWeights {
 			inst1.setClassIndex(source1.getDataSet().numAttributes()-1);
 			inst2.setClassIndex(source2.getDataSet().numAttributes()-1);
 			
-			knn.classifyWithWeights(inst1, inst2);
+			knn.classifyInstances(inst1, inst2);
 //			for(int i=0;i<list.size();i++) {
 //				System.out.println(inst1.classAttribute().value(list.get(i).intValue()));
 //			}
