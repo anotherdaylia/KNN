@@ -124,12 +124,7 @@ public class CrossValidation {
 			testFoldSize = testFold.size();
 			
 			// Claire changes
-<<<<<<< HEAD
 			List<Double> predictList = knn.classifyWithWeights(getTrainingData(i), testFold);
-=======
-			knn.buildClassifier(getTrainingData(i));
-			List<Double> predictList = knn.classifyWithWeights(testFold);
->>>>>>> 39de44508729dd4455cccee9f6c77b76258ebf66
 			
 			isTheSame = 0;
 			for(int j=0; j<testFoldSize; j++){
