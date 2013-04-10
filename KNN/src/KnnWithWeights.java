@@ -277,6 +277,8 @@ public class KnnWithWeights {
 //			source2 = new DataSource(
 //					"testProdIntro.binary.arff");
 			KnnWithWeights knn = new KnnWithWeights(3);
+//			KnnWithWeights knn = new KnnWithWeights(1);
+
 			Instances inst1 = source1.getDataSet();
 			Instances inst2 = source2.getDataSet();
 //			List<Double> list = knn.clasifyInstances(source1.getDataSet(), source2.getDataSet());
