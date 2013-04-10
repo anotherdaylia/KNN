@@ -252,10 +252,10 @@ public class KnnWithWeights {
 		DataSource source2 = null;
 		try {
 			source1 = new DataSource(
-					"trainProdIntro.real.arff");
+					"trainProdIntro.binary.arff");
 			source2 = new DataSource(
-					"testProdIntro.real.arff");
-			KnnWithWeights knn = new KnnWithWeights(3);
+					"testProdIntro.binary.arff");
+			KnnWithWeights knn = new KnnWithWeights(1);
 			Instances inst1 = source1.getDataSet();
 			Instances inst2 = source2.getDataSet();
 //			List<Double> list = knn.clasifyInstances(source1.getDataSet(), source2.getDataSet());

@@ -19,13 +19,14 @@ public class CrossValidation {
 		DataSource source = null;
 		Instances data = null;
 		try {
-			source = new DataSource("trainProdIntro.real.arff");
+//			source = new DataSource("trainProdIntro.real.arff");
+			source = new DataSource("trainProdIntro.binary.arff");
 //			source = new DataSource("trainProdSelection.arff");			
 			data = source.getDataSet();
 			if (data.classIndex() == -1)
 				data.setClassIndex(data.numAttributes() - 1);
 			
-			KnnWithWeights knn = new KnnWithWeights(3);
+			KnnWithWeights knn = new KnnWithWeights(1);
 			CrossValidation cv = new CrossValidation(data, 5);
 			System.out.println("Final: " + cv.doCrossValidation(data, knn));
 			
