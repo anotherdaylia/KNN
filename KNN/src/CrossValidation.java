@@ -25,7 +25,7 @@ public class CrossValidation {
 			J48 j48 = new J48();
 			j48.buildClassifier(data);
 			
-			KnnAlgorithm knn = new KnnAlgorithm(3);
+			KnnWithWeights knn = new KnnWithWeights(3);
 			CrossValidation cv = new CrossValidation(data, 5);
 			System.out.println(cv.doCrossValidation(data, knn));
 			
@@ -47,7 +47,8 @@ public class CrossValidation {
 	private int[] performPermutation() {
         int j = 0;
         int k; 
-        Random rand = new Random();
+        int seed = 5 % sizeOfInput;
+        Random rand = new Random(seed);
         
         int[] dataNum = new int[sizeOfInput];
         for (int i = 0; i < sizeOfInput; i++) {
@@ -111,7 +112,7 @@ public class CrossValidation {
 		return trainingData;
 	}
 	
-	public double doCrossValidation(Instances dataSet, KnnAlgorithm knn){
+	public double doCrossValidation(Instances dataSet, KnnWithWeights knn){
 		double accuracy = 0.0;
 		double[] accuracyPerFold = new double[k];
 		int isTheSame = 0;
@@ -122,8 +123,8 @@ public class CrossValidation {
 			testFoldSize = testFold.size();
 			
 			// Claire changes
-//			knn.buildClassifier(getTrainingData(i));
-			List<Double> predictList = knn.clasifyInstances(getTrainingData(i), testFold);
+			knn.buildClassifier(getTrainingData(i));
+			List<Double> predictList = knn.classifyWithWeights(testFold);
 			
 			isTheSame = 0;
 			for(int j=0; j<testFoldSize; j++){
