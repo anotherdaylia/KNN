@@ -69,7 +69,7 @@ public class Test {
 			
 			list = knn.classifyInstances(trainingSet, testSet);
 			System.out.println("-----------------------------");			
-			System.out.println("Part a: production introduction (real)");
+			System.out.println("Part b: production introduction (real)");
 			for(int i=0;i<list.size();i++) {
 				System.out.println(list.get(i));
 			}
