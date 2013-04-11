@@ -1,0 +1,4 @@
+Small Large Medium
+Small ,1,0,0
+Large ,0,1,0
+Medium,0,0,1

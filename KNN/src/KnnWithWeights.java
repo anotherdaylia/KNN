@@ -1,6 +1,10 @@
+/*
+ * Team 13 Prodigy
+ * KNN algorithm
+ */
+
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.TreeMap;
 
@@ -26,35 +30,15 @@ public class KnnWithWeights {
 	public ArrayList<Double> classifyInstances(Instances trainingSet, Instances testSet) {
 		setup(trainingSet, testSet);
 		buildClassifier();
-		System.out.println(Arrays.toString(weights));
 		setup(trainingSet, testSet);
 		ArrayList<Double> r = new ArrayList<Double>();
 		
  		for (int i = 0; i < normalizedTest.length; i++) {			
 			TreeMap<Double, Integer> map = new TreeMap<Double, Integer>();
 			for (int j = 0; j < trainingSet.numInstances(); j++) {	
-				// remember to change back to i!
 				double similarity = getSimilarity(i, j);
 				map.put(similarity, j);	
 			}				
-
-//			System.out.println("--------------------------------------");
-//			System.out.println("Test instance: " + testSet.instance(i));
-//			System.out.println("Test normalized: " + Arrays.toString(normalizedTest[i]));
-//			
-//			double totalS = 0;
-//			double s = 0;
-//			for (int m = 0; m < k; m++) {
-//				double key = map.lastKey();
-//				totalS += key;
-//				int index = map.remove(key);
-//				System.out.println("Similarity: " + key);
-//				System.out.println("Similar Train instance " + index + ": " + trainingSet.instance(index));
-//				
-//				s += trainingSet.instance(index).classValue() * key;
-//			}	
-//			System.out.println("similarity total: " + totalS);
-//			System.out.println("score: " + s/totalS);
 			r.add(getClassValue(map));
 		}		
 		return r;
@@ -69,7 +53,6 @@ public class KnnWithWeights {
 	}
 	
 	public void buildClassifier() {
-		// We should check the attributes first
 		weights = new double[trainingSet.numAttributes()];
 		
 		for (int i = 0; i < weights.length; i++) {
@@ -88,7 +71,6 @@ public class KnnWithWeights {
 				if (!change) {
 					change = weights[i] - oldW > CrossValidation.epsilon;
 				}
-				//System.out.println(Arrays.toString(weights));
 			}
 		}
 	}
@@ -165,9 +147,6 @@ public class KnnWithWeights {
 	private double getSimilarity(int testIndex, int trainingIndex) {
 		double r = 0;
 		
-		//System.out.println("test index: " + testIndex);
-		//System.out.println("train index" + trainingIndex);
-		
 		for (int i = 0; i < trainingSet.numAttributes(); i++) {
 			if (i == trainingSet.classIndex()) continue;
 			else if (trainingSet.attribute(i).isNumeric()) {
@@ -236,13 +215,9 @@ public class KnnWithWeights {
 				} 
 			}
 		}
-		
-//		System.out.println(Arrays.toString(this.attributesMax));
-//		System.out.println(Arrays.toString(this.attributesMin));
 	}
 	
 	private double[][] normalize(Instances data) {
-		//System.out.println("--" + data.numInstances());
 		double[][] normalized = new double[data.numInstances()][data.numAttributes()];
 		
 		for (int i = 0; i < normalized.length; i++) {
@@ -257,10 +232,6 @@ public class KnnWithWeights {
 				} 				
 			}
 		}
-		
-//		for (int i = 0; i < normalized.length; i++) {
-//			System.out.println(Arrays.toString(normalized[i]));
-//		}
 		return normalized;
 	}
 
@@ -269,19 +240,13 @@ public class KnnWithWeights {
 		DataSource source2 = null;
 		try {
 			source1 = new DataSource(
-					"trainProdIntro.real.arff");
+					"trainProdSelection.arff");
 			source2 = new DataSource(
-					"testProdIntro.real.arff");
-//			source1 = new DataSource(
-//					"trainProdIntro.binary.arff");
-//			source2 = new DataSource(
-//					"testProdIntro.binary.arff");
+					"testProdSelection.arff");
 			KnnWithWeights knn = new KnnWithWeights(3);
-//			KnnWithWeights knn = new KnnWithWeights(1);
 
 			Instances inst1 = source1.getDataSet();
 			Instances inst2 = source2.getDataSet();
-//			List<Double> list = knn.clasifyInstances(source1.getDataSet(), source2.getDataSet());
 			inst1.setClassIndex(source1.getDataSet().numAttributes()-1);
 			inst2.setClassIndex(source2.getDataSet().numAttributes()-1);
 			

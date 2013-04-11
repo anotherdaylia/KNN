@@ -1,0 +1,6 @@
+spend<<saving spend<saving spend>saving spend>>saving
+spend<<saving ,1,0,0,0
+spend<saving ,0,1,0,0
+spend>saving ,0,0,1,0
+spend>>saving,0,0,0,1
+

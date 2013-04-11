@@ -1,3 +1,8 @@
+/*
+ * Team 13 Prodigy
+ * Cross validation program
+ */
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -20,13 +25,13 @@ public class CrossValidation {
 		try {
 //			source = new DataSource("trainProdIntro.real.arff");
 //			source = new DataSource("trainProdSelection.arff");			
-			source = new DataSource("trainProdIntro.binary.arff");
+			source = new DataSource("trainProdSelection.arff");
 //			source = new DataSource("trainProdSelection.arff");			
 			data = source.getDataSet();
 			if (data.classIndex() == -1)
 				data.setClassIndex(data.numAttributes() - 1);
 			
-			KnnWithWeights knn = new KnnWithWeights(5);
+			KnnWithWeights knn = new KnnWithWeights(3);
 			CrossValidation cv = new CrossValidation(data, 5);
 			System.out.println("Final: " + cv.doCrossValidation(data, knn));
 			

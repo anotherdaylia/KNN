@@ -1,0 +1,6 @@
+Student,Business,Other,Doctor,Professional
+Student,1,0,0,0,0
+Business,0,1,0,0,0
+Other,0,0,1,0,0
+Doctor,0,0,0,1,0
+Professional,0,0,0,0,1

@@ -1,0 +1,6 @@
+Fund Loan CD Bank_Account Mortgage
+Fund ,1,0,0,0,0
+Loan ,0,1,0,0,0
+CD ,0,0,1,0,0
+Bank_Account ,0,0,0,1,0
+Mortgage,0,0,0,0,1

@@ -1,0 +1,5 @@
+Web&Email Full Web None
+Web&Email ,1,0,0,0
+Full ,0,1,0,0
+Web ,0,0,1,0
+None,0,0,0,1
