@@ -1,0 +1,6 @@
+student engineer	librarian	professor	doctor
+student,1.0,0,0,0,0
+engineer,0,1.0,0,0,0
+librarian,0,0,1,0,0
+professor,0,0,0,1,0
+doctor,0,0,0,0,1

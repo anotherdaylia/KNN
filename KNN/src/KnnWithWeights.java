@@ -1,10 +1,14 @@
 /*
  * Team 13 Prodigy
- * KNN algorithm
+ * A simple classifier that implements KNN algorithm.
+ * It calculates the similarities between nominal attributes given the similarity matrixes from text files.
+ * It calculates the similarities between numeric attributes based on euclidean methods.
+ * It assigns weights to attributes through a learning process.
  */
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.TreeMap;
 
@@ -21,13 +25,25 @@ public class KnnWithWeights {
 	private double[] weights;
 	private double[][] normalizedTraining;
 	private double[][] normalizedTest;
-
+	HashMap<String, SimilarityMatrix> matrixes;
 
 	public KnnWithWeights(int k) {
 		this.k = k;
+		matrixes = new HashMap<String, SimilarityMatrix>();
 	}
 	
+	// Given the training set and test set, return the predicted results.
+	// Return the index of the attribute values if the class attribute is nominal
+	// Return the numeric values if the class attribute is numeric
 	public ArrayList<Double> classifyInstances(Instances trainingSet, Instances testSet) {
+		for (int i = 0; i < trainingSet.numAttributes(); i++) {
+			if (i != trainingSet.classIndex() && trainingSet.attribute(i).isNominal()) {
+				String name = trainingSet.attribute(i).name();
+				SimilarityMatrix m = new SimilarityMatrix(name + ".txt");
+				matrixes.put(name, m);
+			}
+		}
+		
 		setup(trainingSet, testSet);
 		buildClassifier();
 		setup(trainingSet, testSet);
@@ -52,6 +68,7 @@ public class KnnWithWeights {
 		normalizedTest = normalize(testSet);
 	}
 	
+	// Build the weights for KNN
 	public void buildClassifier() {
 		weights = new double[trainingSet.numAttributes()];
 		
@@ -75,6 +92,7 @@ public class KnnWithWeights {
 		}
 	}
 	
+	// Test the weights
 	private void testStep(CrossValidation cv, int attrIndex, double step) {
 		double oldAccuracy = 0;
 		double newAccuracy = cv.weightsCrossvalidation(trainingSet, this, weights);
@@ -90,6 +108,7 @@ public class KnnWithWeights {
 		}
 	}
 	
+	// Helper method to evaluate the performance of weights
 	public ArrayList<Double> classifyWithWeights(Instances trainingSet, Instances testSet, double[] weights) {
 		ArrayList<Double> r = new ArrayList<Double>();
 		this.trainingSet = trainingSet;
@@ -151,9 +170,10 @@ public class KnnWithWeights {
 			if (i == trainingSet.classIndex()) continue;
 			else if (trainingSet.attribute(i).isNumeric()) {
 				r += weights[i] * euclideanNorm(normalizedTraining[trainingIndex][i], normalizedTest[testIndex][i]);
-			} else if (trainingSet.attribute(i).isNominal() 
-					    && normalizedTraining[trainingIndex][i] != normalizedTest[testIndex][i]) {
-				r += weights[i];
+			} else if (trainingSet.attribute(i).isNominal()) {
+				SimilarityMatrix m = matrixes.get(trainingSet.attribute(i).name());
+				r += weights[i] * (1 - m.getSimilarity((int) trainingSet.instance(trainingIndex).value(i), 
+											(int) testSet.instance(testIndex).value(i)));
 			}
 		}
 		

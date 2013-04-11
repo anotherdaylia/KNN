@@ -1,6 +1,7 @@
 /*
  * Team 13 Prodigy
- * Cross validation program
+ * Cross validation used to evaluate the performance of a classifier
+ * Set the default seed for randomizing the instances.
  */
 
 import java.util.ArrayList;
@@ -22,11 +23,8 @@ public class CrossValidation {
 	public static void main(String[] args) {
 		DataSource source = null;
 		Instances data = null;
-		try {
-//			source = new DataSource("trainProdIntro.real.arff");
-//			source = new DataSource("trainProdSelection.arff");			
-			source = new DataSource("trainProdSelection.arff");
-//			source = new DataSource("trainProdSelection.arff");			
+		try {		
+			source = new DataSource("trainProdSelection.arff");		
 			data = source.getDataSet();
 			if (data.classIndex() == -1)
 				data.setClassIndex(data.numAttributes() - 1);

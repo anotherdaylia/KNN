@@ -41,7 +41,7 @@ public class Test {
 					"trainProdIntro.binary.arff");
 			testSource = new DataSource(
 					"testProdIntro.binary.arff");
-			knn = new KnnWithWeights(3);
+			knn = new KnnWithWeights(1);
 
 			trainingSet = trainingSource.getDataSet();
 			testSet = testSource.getDataSet();
@@ -60,7 +60,7 @@ public class Test {
 					"trainProdIntro.real.arff");
 			testSource = new DataSource(
 					"testProdIntro.real.arff");
-			knn = new KnnWithWeights(3);
+			knn = new KnnWithWeights(1);
 
 			trainingSet = trainingSource.getDataSet();
 			testSet = testSource.getDataSet();
